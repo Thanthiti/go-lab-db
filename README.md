@@ -1,2 +1,2 @@
 # go-lab-db
-Practice repo for PostgreSQL &amp; GORM in Go.
+Practice repo for PostgreSQL and GORM in Go.
