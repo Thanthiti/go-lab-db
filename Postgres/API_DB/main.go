@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -12,77 +14,110 @@ import (
 )
 
 var db *sql.DB
-
+// DB model
 type Task struct {
 	ID   int
 	Task string
+	UserID string
 }
 
-func CreateTask(task *Task) error {
-	_, err := db.Exec(`INSERT INTO public."Task"("Task") VALUES ($1);`, task.Task)
+type TaskResponse struct {
+    ID       int    `json:"id"`
+    Task     string `json:"task"`
+    UserName string `json:"user_name"`
+}
 
-	return err
+
+func checkMiddleware(c *fiber.Ctx) error{
+	start := time.Now()
+
+	fmt.Printf("URL = %s , Method = %s , Time = %s\n",c.OriginalURL(),c.Method(),start)
+
+	return  c.Next()
 
 }
 
-func GetTaskID(id int) (Task, error) {
-	var t Task
-	row := db.QueryRow(`SELECT "ID","Task" FROM public."Task" WHERE "ID"=$1`, id)
 
-	if err := row.Scan(&t.ID, &t.Task); err != nil {
-		return Task{}, err
-	}
-	return t, nil
-}
 
-func GetAllTask() ([]Task, error) {
-	var tasks []Task
-	row, err := db.Query(`SELECT "ID","Task" FROM public."Task"`)
-
+func getTaskHandleID(c *fiber.Ctx) error {
+	taskID, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		log.Fatal(err)
+		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	defer row.Close()
+	task, err := GetTaskID(taskID)
+	if err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
 
-	for row.Next() {
-		var task Task
-		if err := row.Scan(&task.ID, &task.Task); err != nil {
-			return nil, err
-		}
-		tasks = append(tasks, task)
-	}
-	if err := row.Err(); err != nil {
-		return nil, err
 	}
 
-	return tasks, nil
+	return c.JSON(task)
+}
+func getTasksHandle(c *fiber.Ctx) error {
+
+	task, err := GetAllTask()
+	if err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+
+	}
+
+	return c.JSON(task)
+}
+func PostTaskHandle(c *fiber.Ctx) error {
+	task := new(Task)
+	if err := c.BodyParser(task); err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+	err := CreateTask(task)
+	if  err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+	
+
+	return c.JSON(task)
+}
+func PutTaskHandle(c *fiber.Ctx) error {
+
+	taskID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+	task := new(Task)
+	if err := c.BodyParser(task); err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	UpdateTask, err := UpdateTask(taskID,task) 
+	if err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+
+	}
+	return c.JSON(UpdateTask)
+}
+func DeleteTaskHandle(c *fiber.Ctx) error {
+	taskID , err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+
+	}
+	err = DeleteTaskID(taskID)
+	if err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+		
+	}
+	
+	return c.SendStatus(fiber.StatusNoContent)
 }
 
-func UpdateTask(id int, t *Task) (Task, error) {
-	var task Task
-	row := db.QueryRow(`UPDATE public."Task" SET  "Task"=$1 WHERE "ID" = $2 RETURNING "ID","Task"`, t.Task, id)
-	if err := row.Scan(&task.ID, &task.Task); err != nil {
-		return Task{}, err
-	}
-	return task, nil
-}
+func JoinTaskUserHandle(c *fiber.Ctx) error {
+    join, err := JoinTaskUser()
+    if err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": err.Error(),
+        })
+    }
 
-func DeleteTaskID(id int) error {
-	res, err := db.Exec(`DELETE FROM "Task" WHERE  "ID"=$1`, id)
-	if err != nil {
-		return err
-	}
-	// check if the id not exits in db, if so delete it
-	rowAffected, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-	// if not then return message
-	if rowAffected == 0 {
-		return fmt.Errorf("task with id %d not found", id)
-	}
-	return err
+    return c.JSON(join)
 }
 
 func main() {
@@ -114,39 +149,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// if err = CreateTask(&Task{Task: "Test Task"}); err != nil{
-	// 	log.Fatal(err)
-	// }
-
-	// task,err := GetAllTask()
-	// if  err != nil{
-	// 	log.Fatal(err)
-	// }
-	// fmt.Print(task)
-
-	// task,err := GetTaskID(1)
-	// if  err != nil{
-	// 	log.Fatal(err)
-	// }
-	// fmt.Print(task)
-
-	// update,err := UpdateTask(4,&Task{Task: "Update Task Test"})
-	// if err != nil{
-	// 	log.Fatal(err)
-	// }
-	// fmt.Println(update)
-
-	// err = DeleteTaskID(5)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	fmt.Println("Delete Successful")
-	
-
-
 	app := fiber.New()
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello world!")
-	})
+	app.Use(checkMiddleware)
+	app.Get("/task/:id", getTaskHandleID)
+	app.Get("/tasks/", getTasksHandle)
+	app.Get("/taske/join", JoinTaskUserHandle)
+	app.Post("/task/", PostTaskHandle)
+	app.Put("/task/:id", PutTaskHandle)
+	app.Delete("/task/:id", DeleteTaskHandle)
 	app.Listen(":8080")
 }
