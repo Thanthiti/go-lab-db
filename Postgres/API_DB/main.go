@@ -151,9 +151,9 @@ func main() {
 
 	app := fiber.New()
 	app.Use(checkMiddleware)
+	app.Get("/task/join", JoinTaskUserHandle)
 	app.Get("/task/:id", getTaskHandleID)
 	app.Get("/tasks/", getTasksHandle)
-	app.Get("/taske/join", JoinTaskUserHandle)
 	app.Post("/task/", PostTaskHandle)
 	app.Put("/task/:id", PutTaskHandle)
 	app.Delete("/task/:id", DeleteTaskHandle)
