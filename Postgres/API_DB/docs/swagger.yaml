@@ -1,0 +1,177 @@
+definitions:
+  main.Task:
+    properties:
+      id:
+        type: integer
+      task:
+        type: string
+      userID:
+        type: string
+    type: object
+  main.TaskResponse:
+    properties:
+      id:
+        type: integer
+      task:
+        type: string
+      user_name:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /task/:
+    post:
+      consumes:
+      - application/json
+      description: Create a new task
+      parameters:
+      - description: Task data
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/main.Task'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Task'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Create new task
+      tags:
+      - task
+  /task/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete Task by ID
+      parameters:
+      - description: Task data
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/main.Task'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.TaskResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Delete Task by ID
+      tags:
+      - task
+    get:
+      consumes:
+      - application/json
+      description: Get task detail by ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Task'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Get task by ID
+      tags:
+      - task
+    put:
+      consumes:
+      - application/json
+      description: Update Task by ID
+      parameters:
+      - description: Task data
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/main.Task'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.TaskResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Update Task by ID
+      tags:
+      - task
+  /task/join:
+    get:
+      consumes:
+      - application/json
+      description: Get task join user in DB
+      parameters:
+      - description: TaskResponse data
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/main.TaskResponse'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.TaskResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Get Task join User on id
+      tags:
+      - TaskResponse
+  /tasks/:
+    get:
+      consumes:
+      - application/json
+      description: Get all tasks in DB
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.Task'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Get all tasks
+      tags:
+      - task
+swagger: "2.0"

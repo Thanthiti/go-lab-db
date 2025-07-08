@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"time"
+
+	_ "myModule/Postgres/API_DB/docs"
+
+	fiberSwagger "github.com/gofiber/swagger"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -38,88 +41,6 @@ func checkMiddleware(c *fiber.Ctx) error{
 }
 
 
-
-func getTaskHandleID(c *fiber.Ctx) error {
-	taskID, err := strconv.Atoi(c.Params("id"))
-	if err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
-	}
-
-	task, err := GetTaskID(taskID)
-	if err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
-
-	}
-
-	return c.JSON(task)
-}
-func getTasksHandle(c *fiber.Ctx) error {
-
-	task, err := GetAllTask()
-	if err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
-
-	}
-
-	return c.JSON(task)
-}
-func PostTaskHandle(c *fiber.Ctx) error {
-	task := new(Task)
-	if err := c.BodyParser(task); err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
-	}
-	err := CreateTask(task)
-	if  err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
-	}
-	
-
-	return c.JSON(task)
-}
-func PutTaskHandle(c *fiber.Ctx) error {
-
-	taskID, err := strconv.Atoi(c.Params("id"))
-	if err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
-	}
-	task := new(Task)
-	if err := c.BodyParser(task); err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
-	}
-
-	UpdateTask, err := UpdateTask(taskID,task) 
-	if err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
-
-	}
-	return c.JSON(UpdateTask)
-}
-func DeleteTaskHandle(c *fiber.Ctx) error {
-	taskID , err := strconv.Atoi(c.Params("id"))
-	if err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
-
-	}
-	err = DeleteTaskID(taskID)
-	if err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
-		
-	}
-	
-	return c.SendStatus(fiber.StatusNoContent)
-}
-
-func JoinTaskUserHandle(c *fiber.Ctx) error {
-    join, err := JoinTaskUser()
-    if err != nil {
-        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-            "error": err.Error(),
-        })
-    }
-
-    return c.JSON(join)
-}
-
 func main() {
 	defer db.Close()
 	err := godotenv.Load()
@@ -150,10 +71,14 @@ func main() {
 	}
 
 	app := fiber.New()
+
+	// Swagger
+	app.Get("/swagger/*", fiberSwagger.HandlerDefault)
+
 	app.Use(checkMiddleware)
 	app.Get("/task/join", JoinTaskUserHandle)
+	app.Get("/tasks", getTasksHandle)
 	app.Get("/task/:id", getTaskHandleID)
-	app.Get("/tasks/", getTasksHandle)
 	app.Post("/task/", PostTaskHandle)
 	app.Put("/task/:id", PutTaskHandle)
 	app.Delete("/task/:id", DeleteTaskHandle)
