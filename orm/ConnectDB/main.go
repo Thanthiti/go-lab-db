@@ -16,6 +16,7 @@ import (
 
 func main() {
 	err := godotenv.Load(".env")
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -47,7 +48,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	print(db)
-	fmt.Println("Connected Database Successful!")
 	db.AutoMigrate(&model.Book{})
+
+
+
+		
 }
