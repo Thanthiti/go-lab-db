@@ -15,13 +15,14 @@ type Book struct {
 	Price       int		`json:"price"`
 }
 
-func CreateBook(db *gorm.DB ,book *Book){
+func CreateBook(db *gorm.DB ,book *Book) error{
 	result := db.Create(book)
 	if result.Error != nil{
-		log.Fatalf("Error creating book %v", result.Error)
+		return result.Error
 	}
 
 	fmt.Println("Create book successful")
+	return nil
 }
 
 func GetBook(db *gorm.DB ,id int) *Book{
@@ -47,30 +48,32 @@ func GetBooks(db *gorm.DB) *[]Book{
 	return  &book
 }
 
-func UpdateBook(db *gorm.DB ,book *Book){
+func UpdateBook(db *gorm.DB ,book *Book) error {
 	result := db.Save(&book)
 	if result.Error != nil{
-		log.Fatalf("Error Update book %v", result.Error)
+		return  result.Error
 	}
 	
 	fmt.Println("Update book successful")
+	return nil
 }
 
-func DeleteBook(db *gorm.DB ,id int){
+func DeleteBook(db *gorm.DB ,id int) error{
 	var book Book
 	result := db.Delete(&book,id)
 	if result.Error != nil{
-		log.Fatalf("Error delete book %v", result.Error)
+		return 	result.Error
 	}
-
+	
 	fmt.Println("delete book successful")
+	return  nil
 }
 
-func SearchBook(db *gorm.DB, bookName string) *Book{
-	var book Book
-	result := db.Where("name = ?",bookName).First(&book)
+func SearchBook(db *gorm.DB, bookName string) *[]Book{
+	var book []Book
+	result := db.Where("name = ?",bookName).Find(&book)
 	if result.Error != nil{
-		log.Fatalf("Error delete book %v", result.Error)
+		log.Fatalf("Error get book %v", result.Error)
 	}
 	
 	fmt.Println("Search book successful")
