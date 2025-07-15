@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -14,6 +15,39 @@ type Book struct {
 	Description string	`json:"description"`
 	Price       int		`json:"price"`
 }
+
+type BookResponse struct {
+	ID          uint      `json:"id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	DeletedAt   *time.Time `json:"deleted_at,omitempty"`
+	Name        string    `json:"name"`
+	Author      string    `json:"author"`
+	Description string    `json:"description"`
+	Price       int       `json:"price"`
+}
+
+
+func ToBookResponse(book *Book) *BookResponse {
+	return &BookResponse{
+		ID:          book.ID,
+		CreatedAt:   book.CreatedAt,
+		UpdatedAt:   book.UpdatedAt,
+		DeletedAt:   toTimePtr(book.DeletedAt),
+		Name:        book.Name,
+		Author:      book.Author,
+		Description: book.Description,
+		Price:       book.Price,
+	}
+}
+
+func toTimePtr(deletedAt gorm.DeletedAt) *time.Time {
+	if deletedAt.Valid {
+		return &deletedAt.Time
+	}
+	return nil
+}
+
 
 func CreateBook(db *gorm.DB ,book *Book) error{
 	result := db.Create(book)
@@ -36,7 +70,7 @@ func GetBook(db *gorm.DB ,id int) *Book{
 	
 	return  &book
 }
-func GetBooks(db *gorm.DB) *[]Book{
+func GetBooks(db *gorm.DB) []Book{
 	var book []Book
 	result := db.Find(&book)
 	if result.Error != nil{
@@ -45,7 +79,7 @@ func GetBooks(db *gorm.DB) *[]Book{
 	
 	fmt.Println("Get book successful")
 	
-	return  &book
+	return  book
 }
 
 func UpdateBook(db *gorm.DB ,book *Book) error {
@@ -69,7 +103,7 @@ func DeleteBook(db *gorm.DB ,id int) error{
 	return  nil
 }
 
-func SearchBook(db *gorm.DB, bookName string) *[]Book{
+func SearchBook(db *gorm.DB, bookName string) []Book{
 	var book []Book
 	result := db.Where("name = ?",bookName).Find(&book)
 	if result.Error != nil{
@@ -77,6 +111,6 @@ func SearchBook(db *gorm.DB, bookName string) *[]Book{
 	}
 	
 	fmt.Println("Search book successful")
-	return  &book
+	return  book
 }
 

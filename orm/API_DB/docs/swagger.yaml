@@ -1,0 +1,182 @@
+definitions:
+  model.Book:
+    type: object
+  model.BookResponse:
+    properties:
+      author:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      price:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /book:
+    post:
+      consumes:
+      - application/json
+      description: Create a new book record
+      parameters:
+      - description: Book info
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/model.Book'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.BookResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Create a new book
+      tags:
+      - book
+  /book/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a book record by ID
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Delete book by ID
+      tags:
+      - book
+    get:
+      consumes:
+      - application/json
+      description: Get a single book by ID
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.BookResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Get book by ID
+      tags:
+      - book
+    put:
+      consumes:
+      - application/json
+      description: Update a book record by ID
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Book info
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/model.Book'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.BookResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Update book by ID
+      tags:
+      - book
+  /books:
+    get:
+      consumes:
+      - application/json
+      description: Get all books
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.BookResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Get all books
+      tags:
+      - book
+  /books/search:
+    post:
+      consumes:
+      - application/json
+      description: Search books by name
+      parameters:
+      - description: Book name
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/model.Book'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.BookResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Search book by name
+      tags:
+      - book
+swagger: "2.0"

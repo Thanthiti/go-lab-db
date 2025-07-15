@@ -24,8 +24,10 @@ go get -u gorm.io/driver/postgres
 # Swagger for APIs
 go get github.com/swaggo/swag
 go get github.com/gofiber/swagger
-swag init
+#create  docs file document API 
+swag init 
 ```
-## Note 
+## Note  
+
 QueryRow use for return value
 Exec use for no return
