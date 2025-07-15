@@ -24,8 +24,11 @@ go get -u gorm.io/driver/postgres
 # Swagger for APIs
 go get github.com/swaggo/swag
 go get github.com/gofiber/swagger
-#create  docs file document API 
+#Create  docs folder to add API document  
 swag init 
+#Authenthication
+go get golang.org/x/crypto/bcrypt
+go get github.com/golang-jwt/jwt/v4
 ```
 ## Note  
 
