@@ -1,12 +1,30 @@
 package handle
 
 import (
+	"fmt"
 	"myModule/orm/API_DB/model"
+	"os"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
 	"gorm.io/gorm"
 )
+
+func AuthRequire(c *fiber.Ctx) error{
+	cookie := c.Cookies("jwt")
+	jwtSecretKey := os.Getenv("JWT_SECRET")
+	token ,err := jwt.ParseWithClaims(cookie , jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
+		return []byte(jwtSecretKey),nil
+	})
+	if err != nil || !token.Valid{
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+
+	claim := token.Claims.(jwt.MapClaims)
+	fmt.Println(claim)
+	return c.Next()
+}
 
 func GetBooksHandler(db *gorm.DB) fiber.Handler {
 	return func(c *fiber.Ctx) error {

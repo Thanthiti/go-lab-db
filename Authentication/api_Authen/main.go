@@ -6,6 +6,7 @@ import (
 	"myModule/Authentication/api_Authen/handle"
 	"myModule/Authentication/api_Authen/model"
 	"os"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -38,10 +39,11 @@ func main() {
 	}
 
 	app := fiber.New()
-
+	
 	db.AutoMigrate(&model.Book{}, &model.User{})
-
+	
 	// Route Book
+	app.Use("/books",handle.AuthRequire)
 	app.Get("/books", handle.GetBooksHandler(db))
 	app.Get("/book/:id", handle.GetBookIDHandler(db))
 	app.Post("/book/", handle.PostBookHandler(db))
@@ -74,9 +76,14 @@ func main() {
 		if err != nil {
 			return c.SendStatus(fiber.StatusUnauthorized)
 		}
-		
+		c.Cookie(&fiber.Cookie{
+			Name : "jwt",
+			Value : token,
+			Expires: time.Now().Add(time.Hour * 72),
+			HTTPOnly: true,
+		})
 		return c.JSON(fiber.Map{
-			"token":token,
+			"message":"login Succress",
 		})
 	})
 

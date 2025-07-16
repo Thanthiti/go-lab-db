@@ -13,7 +13,7 @@ import (
 
 type User struct {
 	gorm.Model
-	Email    string `json:"email",gorm:"unique"`
+	Email    string `json:"email" gorm:"unique"`
 	Password string `json:"password"`
 }
 
@@ -44,6 +44,7 @@ func LoginUser(db *gorm.DB, user *User) (string, error) {
 	if err != nil {
 		return "", result.Error
 	}
+
 	// pass = return jwt
 	jwtSecretKey := os.Getenv("JWT_SECRET")
 	token := jwt.New(jwt.SigningMethodHS256)
